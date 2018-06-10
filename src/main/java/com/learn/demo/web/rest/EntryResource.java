@@ -4,6 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.learn.demo.domain.Entry;
 
 import com.learn.demo.repository.EntryRepository;
+import com.learn.demo.security.SecurityUtils;
 import com.learn.demo.web.rest.errors.BadRequestAlertException;
 import com.learn.demo.web.rest.util.HeaderUtil;
 import com.learn.demo.web.rest.util.PaginationUtil;
@@ -93,7 +94,8 @@ public class EntryResource {
     @Timed
     public ResponseEntity<List<Entry>> getAllEntries(Pageable pageable) {
         log.debug("REST request to get a page of Entries");
-        Page<Entry> page = entryRepository.findAll(pageable);
+        Page<Entry> page = entryRepository.findByBlogUserLoginOrderByDateDesc(
+            SecurityUtils.getCurrentUserLogin().orElse(null), pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/entries");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
